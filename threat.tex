@@ -1,0 +1,29 @@
+\section{Threats to Validity}
+\label{sec:threat}
+
+\noindent {\em Internal Validity}: Threats to internal validity relate to
+errors in our experiments and experimenter bias. We have double checked our
+code and data, but there may still be errors that we are not aware of. In
+the baseline approach by Tian et al.~\cite{tian2012identifying}, commits
+were labeled by an author with expertise in Linux kernel code, which may
+introduce author bias. In this work, none of the authors label the commits.
+
+\vspace{0.1cm}\noindent {\em External Validity}: Threats to external
+validity relate to the generalizability of our approach. We have evaluated
+our approach on more than 80,000 patches. We believe this is a good number
+of patches; still, the results may differ if we consider other sets of
+Linux kernel patches. Similar to the evaluation of Tian et
+al.~\cite{tian2012identifying}, we only investigated Linux kernel patches,
+although PatchNet can be applied to patches of other systems, if
+labels are available. In the
+future, we would like to consider more projects.
+Still, we note that the Linux kernel represents one of the largest open
+source projects, with over 16 million lines of C code, and that different
+kernel subsystems have very different purposes, resulting in a wide variety
+of code.
+
+\vspace{0.1cm}\noindent {\em Construct Validity}: Threats to construct validity relate to the suitability of our evaluation metrics. We use standard metrics commonly used to evaluate classifier performance. Thus, we believe there is little threat to construct validity.
+
+
+
+

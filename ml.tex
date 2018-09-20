@@ -1,0 +1,124 @@
+\documentclass{article}
+\usepackage{fullpage}
+
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{xcolor}
+
+% Very convenient to add comments on the paper. Just set the boolean
+% to false before sending the paper:
+\usepackage{ifthen}
+\usepackage{balance}
+\newboolean{showcomments}
+\setboolean{showcomments}{true}
+%\setboolean{showcomments}{false}
+\ifthenelse{\boolean{showcomments}}
+{ \newcommand{\mynote}[2]{\textcolor{red}{
+    \fbox{\bfseries\sffamily\scriptsize#1}
+    {\small$\blacktriangleright$\textsf{\emph{#2}}$\blacktriangleleft$}}}}
+{ \newcommand{\mynote}[2]{}}
+
+\newcommand{\jl}[1]{\mynote{Julia}{#1}}
+\newcommand{\jh}[1]{\mynote{Comments}{#1}}
+\newcommand{\ro}[1]{\mynote{Richard}{#1}}
+\newcommand{\jg}[1]{\mynote{James}{#1}}
+
+\begin{document}
+
+Our approach is built on the work of Kim~\cite{kim2014convolutional}
+and Kalchbrenner {\em et al.}~\cite{kalchbrenner2014convolutional} on
+sentence classification.  We review the basic architecture proposed in that
+work and then consider how to adapt it to our task.
+
+\subsection{Building Blocks}
+\label{sec:blocks}
+
+Classification of messages using CNN involves an input message, represented
+as a two-dimensional matrix, a set of filters for identifying features in
+the message, and a means of combining the results of the filters into an
+{\em embedding vector} that represents the most salient features of the
+message, to be used as a basis for classification.
+
+\paragraph*{Message representation.}
+A message can be encoded as a two-dimensional matrix by considering the
+message to be a sequence of vectors that represent the individual words.  A
+simple strategy to encode a word as a vector is to create a bitmap the size
+of the vocabulary and represent the words by a vector in which a 1 occurs
+only in the position representing the word.  This approach results in a
+high dimension matrix and does not capture the relationships between the
+meanings of words.  An alternative is to map words into a smaller space,
+such that related words have close values.  While such a {\em word
+  embedding} can be based on existing lexical databases, such as WordNet
+\jl{?} \cite{WordNet}, we choose instead to {\em learn} it, starting from
+random values, in order to obtain an embedding that is customized to the
+meaning of words in our specific problem area.
+
+Technically, a message is a sequence of words $[\texttt{w}_1, \dots,
+  \texttt{w}_{|m|}]$.  Given a word embedding matrix $\textbf{W}_m \in
+\mathbb{R}^{|V_m|\times d_m}$, the matrix representation of the message
+$\textbf{M} \in \mathbb{R}^{|m| \times d_m}$ is $\textbf{M} =
+       [\textbf{W}_m[w_1], \dots, \textbf{W}_m[w_{|m|}]]$.  For
+       parallelization, all messages are padded or truncated to the same
+       length $|m|$.
+
+\paragraph*{Convolutional layer.} The role of the convolutional layer is to
+apply filters to the message, in order to identify the message's salient
+features.  In our setting, a filter is a small matrix $\textbf{f} \in
+\mathbb{R}^{k \times d_m}$ that is applied to a window
+$\textbf{M}_{i:i+k-1}$ of $k$ words starting at word $i \leq |m|-k$:
+\begin{equation} \footnotesize
+\label{eq:filtering}
+t_i = \alpha ( \textbf{f} \ast \textbf{M}_{i:i+k-1} + b_i) 
+\end{equation}
+$\ast$ is a sum of element-wise products, $b_i \in \mathbb{R}$ is a bias
+value, and $\alpha(\cdot)$ is a non-linear activation function.  For
+$\alpha(\cdot)$, we choose the rectified linear unit (ReLU) activation
+function~\cite{nair2010rectified,dahl2013improving}, defined as
+$\alpha(\mathbf{a}) = \max(\mathbf{0}, \mathbf{a})$, which has been shown
+to provide fast training, sparse activation, and reduced likelihood of
+vanishing gradients.  For the filter size, we choose $k \in \{1,2\}$,
+making the associated windows analogous to a 1-gram or 2-gram as used in
+natural language processing~\cite{brown1992class}.
+
+Each filter is applied to all windows of size $k$ in the message resulting
+in a {\em feature vector} $\textbf{t} \in \mathbb{R}^{|m|-k+1}$:
+\begin{equation} \footnotesize
+\label{eq:ftr_vector}
+\textbf{t} = [t_1, t_2, \cdots, t_{|m|-k+1}]
+\end{equation}
+Like the word embedding vector, the filters initially contain random values
+and are refined through the learning process.
+
+\paragraph*{Max pooling.} To understand a message, we are interested in the
+degree to which it exhibits various features, but not where in the message
+those features occur.  Accordingly, we apply a max pooling
+operation~\cite{collobert2011natural} over each of the feature vectors to
+obtain the highest value:
+\begin{equation} \footnotesize
+\label{eq:pooling}
+\underset{1 \leq i \leq |m|-k+1}{\max} t_i
+\end{equation}
+The results of the max pooling operation are then combined to form the
+embedding vector representing the meaning of the message.
+
+\subsection{Application to patch representation}
+
+Recall that a patch consists of two parts: a log message that is written as
+natural English text, and a description of code changes to a set of files,
+where the code changes are organized as a sequence of hunks, consisting of
+consecutive lines of removed and added code.  The log message can be
+straightforwardly represented using the strategy presented in Section
+\ref{sec:blocks}, forming our {\em Commit Message Module} (Figure
+\ref{some_figure}).  That strategy, however, does not take into account
+message structure, as needed to distinguish between changes to different
+files, changes in different hunks, and different kinds (removed or added)
+of changes.  Accordingly, we propose a new model for our {\em Commit Code
+  Module} (Figure \ref{commit_code_module}) to incorporate this structural
+  information.
+\end{document}

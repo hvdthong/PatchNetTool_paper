@@ -1,0 +1,32 @@
+\vspace{-0.1cm}
+\section{Conclusion}
+\label{sec:conclusion}
+
+In this paper, we propose PatchNet, a hierarchical deep learning-based model for identifying stable patches in the Linux kernel. For each patch, our model constructs embedding vectors from the commit message and the set of code changes. The embedding vectors are concatenated and then used to compute a prediction score for the patch. Different from existing deep learning techniques working on the source code~\cite{white2016deep, wang2016automatically, huo2017enhancing, li2017cclearner, guo2017semantically, lam2017bug, gu2016deep}, our hierarchical deep learning-based architecture takes into account the structure of code changes (i.e., files, hunks, lines) and the sequential nature of source code (by considering each line of code as a sequence of words) to predict stable patches in Linux kernel. 
+
+% PatchNet learns a representation of code changes by constructing embedding vectors of removed and added code of an affected file in the given patch. We concatenate these embedding vectors to construct an embedding vector of the affected file. The embedding vector is subsequently used to extract the representation of the code changes. \jg{rephrase this sentence}
+
+We have extensively evaluated PatchNet on a new dataset containing 82,403 recent Linux kernel patches. The results show that PatchNet outperforms 
+% the best-performing baseline (F-NN) by 6.55\%, 7.8\%, and 6.3\% 
+% in terms of accuracy, F1, and AUC, respectively. We also notice that 
+four different baselines including two also based on deep-learning. In particular, for a wide range of values in the precision-recall curve, PatchNet obtains the highest recall for a given precision; as well as the highest precision for a given recall. For example, PatchNet achieves a 14.9\% higher recall (0.786) at a high precision level (0.95) and a 41.2\% higher precision (0.603) at a high recall level (0.95) compared to the best-performing baseline.
+
+% Our representation of code changes includes names of non-local functions
+% that are used at least 5 times, but no other variable names.  A possible
+% future direction would be to investigate whether more kinds of names could
+% be retained, to improve the learned result without over diversifying the
+% dataset.  Another issue in identifying stable-relevant patches is to identify
+% which earlier stable versions the patch should be applied to.  We will
+% investigate whether machine learning can be used to help with this issue.
+% \jl{David had comments for this paragraph}
+
+In future work, we want to investigate ways to improve
+our approach further, {\em e.g.}, by incorporating additional data such as
+more kinds of names and type information.  Another issue would be to
+identify the stable versions to which a patch should be applied. We plan to
+investigate whether machine learning can help with this issue.  It would
+also be interesting apply our approach that learns patch (diff) embeddings
+to other related problems, {\em e.g.} identification of valid/invalid patches in
+automated program repair~\cite{xiong2018identifying}, assignment of patches
+to developers for code review~\cite{thongtanunam2015should,
+zanjani2016automatically}, etc.

@@ -1,0 +1,107 @@
+\documentclass[conference]{IEEEtran}
+\thispagestyle{plain} % remove for final version
+%\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\newcommand\recheck[1]{\textcolor{red}{#1}}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+% Very convenient to add comments on the paper. Just set the boolean
+% to false before sending the paper:
+\usepackage{ifthen}
+\usepackage{balance}
+\newboolean{showcomments}
+\setboolean{showcomments}{true}
+%\setboolean{showcomments}{false}
+\ifthenelse{\boolean{showcomments}}
+{ \newcommand{\mynote}[2]{\textcolor{red}{
+    \fbox{\bfseries\sffamily\scriptsize#1}
+    {\small$\blacktriangleright$\textsf{\emph{#2}}$\blacktriangleleft$}}}}
+{ \newcommand{\mynote}[2]{}}
+
+\newcommand{\jl}[1]{\mynote{Julia}{#1}}
+\newcommand{\jh}[1]{\mynote{Comments}{#1}}
+\newcommand{\ro}[1]{\mynote{Richard}{#1}}
+\newcommand{\jg}[1]{\mynote{James}{#1}}
+\newcommand{\ty}[1]{\mynote{Yuan}{#1}}
+\newcommand{\ans}[1]{{#1}}
+
+\usepackage[dvipsnames]{xcolor}
+  \definecolor{diffstart}{named}{Blue}%{Grey}
+  \definecolor{diffincl}{named}{OliveGreen}
+  \definecolor{diffrem}{named}{Red}
+
+\newcommand{\extrabold}{\bfseries}
+
+\lstset{numbers=left,xleftmargin=3em}
+
+\usepackage{listings}
+  \lstdefinelanguage{diff}{
+	basicstyle=\ttfamily\extrabold\tiny,
+	morecomment=[f][\color{diffstart}]{@},
+	morecomment=[f][\color{diffincl}]{+},
+	morecomment=[f][\color{diffrem}]{-},
+        numbers=left,
+        stepnumber=1,
+        keepspaces=true,
+	identifierstyle=\color{black},
+  }
+
+
+\thispagestyle{plain} % remove for final version
+\pagestyle{plain} % remove for final version
+
+\usepackage{pgfplots}
+\pgfplotsset{width=3in,height=1.5in,compat=1.14}
+
+\begin{document}
+
+
+
+% \title{Hierarchical Learning of Patch Embedding for Stable Patch Identification in Linux Kernel}
+\title{PatchNet: Hierarchical Deep Learning-Based Stable Patch Identification for the Linux Kernel}
+% {\footnotesize \textsuperscript{*}Note: Sub-titles are not captured in Xplore and
+% should not be used}
+% \thanks{Identify applicable funding agency here. If none, delete this.}
+% }
+%
+\author{\IEEEauthorblockN{Thong Hoang\textsuperscript{1}, Julia Lawall\textsuperscript{2}, Richard J. Oentaryo\textsuperscript{3}, Yuan Tian\textsuperscript{1}, David Lo\textsuperscript{1}}
+\IEEEauthorblockA{\textsuperscript{1}School of Information Systems, Singapore Management University, Singapore\\
+\textsuperscript{2}Inria/LIP6, Regal\\
+\textsuperscript{3}McLaren Applied Technologies, Singapore}
+vdthoang.2016@smu.edu.sg, julia.lawall@lip6.fr, richard.oentaryo@mclaren.com, \{ytian, davidlo\}@smu.edu.sg
+}
+
+\maketitle
+
+\input{abstract}
+
+%\begin{IEEEkeywords}
+%Linux kernel, bug fixing, classification, deep learning.
+%\end{IEEEkeywords}
+
+\input{intro}
+\input{background}
+\input{approach}
+\input{exp_results}
+%\input{qualitative}
+\input{threat}
+\input{related_work}
+\input{conclusion}
+%\input{appendix}
+\input{appendix2}
+
+\balance
+\bibliographystyle{IEEEtran}
+\bibliography{references} 
+\end{document}

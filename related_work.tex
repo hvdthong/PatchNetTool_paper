@@ -1,0 +1,49 @@
+\section{Related Work}
+\label{sec:related_work}
+
+Researchers have applied deep learning techniques to solve software
+engineering problems, including code clone
+detection~\cite{white2016deep,li2017cclearner,bui2018hierarchical}, software traceability link
+recovery~\cite{guo2017semantically}, bug
+localization~\cite{huo2016learning, lam2017bug}, defect
+detection~\cite{yang2015deep, wang2016automatically}, automated program
+repair~\cite{gupta2017deepfix}, and API
+learning~\cite{gu2016deep}. However, we did not find any work that applied
+deep learning techniques to learn semantic representations of patches for
+similar tasks such as stable patch identification, patch classification, etc. Here, we briefly describe the most closely related work besides the baseline approaches described in Section~\ref{sec:baselines}.
+
+
+%\vspace{0.1cm} \noindent {\em Sequence-to-sequence learning.} Gu et al. adopted a neural language model named a Recursive Neural Network (RNN)~\cite{hagan1996neural, mikolov2010recurrent} encoder-decoder to generate API usage sequences, i.e., a sequence of method names, for a given natural language query~\cite{gu2016deep}. Gupta et al. proposed DeepFix to automatically fix syntax errors in C code~\cite{gupta2017deepfix}. DeepFix leverages a multi-layered sequence-to-sequence neural network with attention~\cite{mnih2014recurrent}, to process the input code and a decoder RNN with attention that generates the output fixed code. The above studies focus on learning sequence-to-sequence mappings and thus consider a different task than the one considered in our work.
+
+%\vspace{0.1cm} \noindent {\em Learning code representation.}
+CCLearner~\cite{li2017cclearner} learns a deep neural network classifier
+from clone pairs and non clone pairs to detect clones.  To represent code,
+it extracts features based on different categories (reserved words,
+operators, etc.) of tokens in source code. White et al. presented another
+deep learning based clone detector~\cite{white2016deep}. Their tool first
+uses RNN to map program tokens to continuous-valued vectors, and then uses
+RNN to combine the vectors with extracted syntactic features to train a
+classifier. Wang et al. used a Deep Belief Network
+(DBN)~\cite{hinton2009deep} to predict defective
+code~\cite{wang2016automatically}. The DBN learns a semantic representation
+(in the form of a continuous-valued vector) of each source code file from
+token vectors extracted from programs' ASTs. Lam et al. combined deep
+learning with information
+retrieval to localize
+buggy files based on bug reports~\cite{lam2017bug}. Bui and Jiang
+proposed a deep learning based approach to automatically learn
+cross-language representations for various kinds of structural code
+elements (i.e., expressions, statements, and methods) for program
+translation~\cite{bui2018hierarchical}. Different from the above
+studies, we design a novel deep learning architecture that focuses on code
+changes, taking into account their hierarchical and structural properties.
+
+%Different from the above studies, we design a novel deep learning solution that: (1) learns representations of both text (in our case, commit logs) and code, and (2) considers code changes (i.e., diffs) rather than a source code file. 
+%and (3) considers the hierarchical and sequential structure of code changes.
+
+
+%\vspace{0.1cm} \noindent {\em Learning of both code and text representations.} Huo and Li proposed a model, LS-CNN, for classifying if a source code file is related to a bug report (i.e., the source code file needs to be fixed to resolve the bug report)~\cite{huo2017enhancing}. LS-CNN is the first code representation learning method that combines CNN and LSTM (a specific type of RNN) to extract semantic representations from \jl{from or of?} both code (in their case: a source code file) and text (in their case: a bug report). Similar to LS-CNN, PatchNet also learns semantic representations of \jl{from or of?} both code and text. However, different from LS-CNN, PatchNet includes a new representation learning architecture for commit code comprising the representations of removed code and added code of an affected file in a given patch. The representation of removed code and added code is able to capture the sequential nature of the source code inside a code change and it is learned following a CNN-3D architecture~\cite{ji20133d}, instead of LSTM. Our results in Section~\ref{sec:exp} show that PatchNet can achieve an 11.24\% improvement in terms of F1 over the LS-CNN model.
+
+%\jl{The following seemed out of place in Section 3:}
+%\jg{I'll ask Tian Yuan to take a look at this part.}
+%Tian et al.~\cite{tian2012identifying} manually extracted code change features, i.e., number of files, number of hunks, etc., from a set of diff code changes, but that work does not break up the code changes by a file. Features extracted from code changes for each file may provide more information about the overall code changes by a given patch.
