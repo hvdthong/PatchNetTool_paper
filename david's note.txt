@@ -1,0 +1,27 @@
+Page 1:  Introduction stuff 
+Different: claiming a more general contribution
+Contribution: patch classification beyond stable vs. not but  other  kind of labels
+An  example; DEFECT PREDICTION
+predict i f a  change is  defective/not
+many other things  ...
+find David's email
+PatchNet: Deep Patch Classification Tool
+PatchNet: A Tool  for Deep Patch Classification
+x Stable, x Linux
+1. This work has been submitted to ICSE 2018
+Page 2:  Reuse
+Technical details  of  deep  learning  archi 
+Page 3: Tool aspect of it
+
+Configuration, etc. 
+Usage scenario
+Some evaluation numbers
+Usage scenario: stable kernel
+Some numbers a small table
+Shorten related work
+Conclusion, references
+Intro
+See call for paper in website: https://2019.icse-conferences.org/track/icse-2019-Demonstrations
+the tool’s envisioned users
+the software engineering challenges the tool proposes to address
+how the tool is used, and the results of validation studies already conducted for a mature tool, or the design of planned studies for an early prototype.
