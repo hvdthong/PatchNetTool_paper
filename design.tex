@@ -9,4 +9,6 @@
     \vspace{-0.4cm}
 \end{figure}
 
-Figure~\ref{fig:patchnet} shows an overall framework of our PatchNet. Our tool accepts as input a set of patches, which contain both commit messages and commit code. The output of PatchNet is a list of predicted scores that reflects how likely the given patches are bug fixing patches. Our framework includes three main modules: the \textit{commit message module}, the \textit{commit code module}, and the \textit{classification module}.
+Figure~\ref{fig:patchnet} shows an overall framework of our PatchNet. Our tool accepts as input a set of patches, which contain both commit messages and commit code. The output of PatchNet is a list of predicted scores reflecting how likely the given patches are bug fixing patches. Our framework includes three main modules: the \textit{commit message module}, the \textit{commit code module}, and the \textit{classification module}. The commit message module and the commit code module transform the commit message and the commit code into embedding vectors $\text{e}_m$ and $\text{e}_c$, respectively. The two vectors are then passed to the classification module, which aims to compute a prediction indicating the likelihood of a patch being bug fixing patch. 
+
+\noindent \textbf{Commit message module:} This module takes a commit message as input and outputs an embedding vector that represents the most salient features of the message. The commit message module is the same as the one proposed by Kim~\cite{kim2014convolutional} for sentence classification. 
