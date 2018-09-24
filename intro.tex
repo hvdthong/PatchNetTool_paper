@@ -2,66 +2,89 @@
 \section{Introduction}
 \label{sec:intro}
 
-The Linux kernel follows a two-tiered release model in which a \textit{mainline} version, accepting bug fixes and feature enhancements, is paralleled by a series of stable versions that accept only bug fixes~\cite{lee2003firm}. 
-The mainline serves the needs of users who want to take advantage of the latest features, while the stable versions serve the needs of users who value stability, or cannot upgrade their kernel due to hardware and software dependencies. To ensure that there is as much review as possible of the bug fixing patches and to ensure the highest quality of the mainline itself, the Linux kernel
-requires that all patches applied to the stable versions pass through the mainline first. A mainline subsystem \textit{maintainer} may identify a patch as a bug fixing patch
-appropriate for stable kernels and add to the commit log a Cc: stable tag.\footnote{The exact tag is \textrm{Cc}: \textrm{stable@vger.kernel.org}.} Stable-kernel maintainers then extract such annotated commits from the mainline commit history and apply the resulting patches to the stable versions that are affected by the bug.
+Deep learning techniques have been widely used to solve many problems in software engineering such as code clone detection~\cite{white2016deep,li2017cclearner}, software traceability link recovery~\cite{guo2017semantically}, bug localization~\cite{huo2016learning, lam2017bug}, defection prediction~\cite{yang2015deep, wang2016automatically}, etc. However, these techniques have not been applied to learn a semantic representation of patches for similar tasks such as patch identification, patch classification, etc. 
 
-Figure~\ref{fig:sample_patch} shows a sample bug fixing patch that has been applied to
-the stable version derived from Linux v4.5. This patch adjusts a returned
-error code that may influence the value reported to the user level. As
-illustrated in Figure~\ref{fig:sample_patch}, a patch contains both a
-textual commit message (lines 5-12) and a set of diff code elements (lines
-14-28), i.e., changes that are applied to the affected file. A patch
-\textit{author} submits a patch to \textit{maintainers}. The
-maintainers decide whether the patch should be integrated into the
-mainline kernel, and if so, whether it should be annotated for propagation
-to stable kernels.
+These tasks are popular in the Linux kernel as the Linux kernel requires that all patches applied to a stable version need to pass through a mainline first. A mainline subsystem \textit{maintainer} may identify a patch as a bug fixing patch appropriate for stable kernels. Stable-kernel maintainers then apply the resulting patches to the stable version that are affected by the bug. The quality of the stable kernels critically relies on the effort that the subsystem maintainers put into labeling patches as relevant to the stable kernels, i.e., identifying \textit{stable patches}. This manual
+effort represents a potential weak point in the development process, e.g., the maintainers may forget to label some relevant patches, and different maintainers could apply different criteria for selecting them.
 
-\begin{figure}[t!]
-\begin{lstlisting}[language=diff]
-commit 342da5cefddbf818e1cb59537e021cdad9744e93
-Author: Alex Lyakas <...>
-Date:   Thu Mar 10 13:09:46 2016 +0200
+To address the above problem, Tian et al.~\cite{tian2012identifying} presented an approach that combines LPU (Learning from Positive and Unlabeled Examples)~\cite{letouzey2000learning} and SVM (Support Vector Machine)~\cite{suykens1999least} to automatically identify bug fixing patches for Linux stable kernels. The LPU+SVM based approach relies on thousands of bag-of-words\footnote{A bag-of-words model represents a text as the multi-set of the words it contains.} features extracted from commit messages and 52 manually features extracted from code changes. However, the bag-of-words representation of commit message implies that the temporal dependencies (ordering) of words in a commit message are ignored. In addition, the manual creation of code features might overlook features that maintainers find helpful to identify stable patches. Thus, a richer feature representation of a patch that captures its hierarchical and structural properties is needed.
 
-    btrfs: csum_tree_block: return proper errno value
+In this work, we implement a prototype tool based on our new work, submitted to ICSE'19, that performs deep learning on a set of patches. We name the tool PatchNet which is a tool for deep patch classification. The tool takes as input a set of patches and outputs a list of predicted scores used to estimate how likely the given patches the given patches are bug fixing patches. Specifically, PatchNet aims to automatically learn two embedding vectors for representing the commit message and the set of code changes in a given patch, respectively. The two embedding vectors are then used to compute a prediction score of a given patch to estimate how likely the given patch is bug fixing patch.
+
+Moreover, PatchNet is applicable to other problems in the software engineering domain such as bug localization, defect prediction, etc. For example, bug localization often contains bug reports and source code files. The IR-based bug localization techniques~\cite{rao2011retrieval, sisman2012incorporating} analyze textual descriptions contained in bug reports and identifier names and comments in source code files. They then return a ranked list of program elements (typically program files) that are the most similar to the bug reports. In order to solve this problem in PatchNet, we can input bug reports and source code files as commit messages and commit code, we then train PatchNet model and output predicted scores measuring how likely the given source files relevant to the bug reports. 
+
+The rest of this paper is organized as
+follows. Section~\ref{sec:design} highlights the bird's-eye view architecture of PatchNet. Section~\ref{sec:usage} illustrate how PatchNet works with specific examples as well as demonstrates command line options. Section \ref{sec:related_work} discuss related works. Finally, we conclude and present future work in  Section~\ref{sec:conclusion}.
+
+%Different from existing deep learning techniques working on source code~\cite{white2016deep,huo2017enhancing,wang2016automatically,lam2017bug}, we propose a
+% novel hierarchical representation learning architecture for patches, by constructing embedding vectors of a given patch in a bottom-up fashion. PatchNet first constructs embedding vectors of removed code and added code of an affected file in the given patch. The embedding vectors are able to capture the sequential nature of the removed and added code. These are then concatenated to build an embedding vector for the affected file. In turn, the embedding vectors of all the affected files are used to build the representation of the entire code changes in the given patch.
+
+
+
+
+
+% The word features are obtained automatically by representing each commit message as a bag of words,\footnote{A bag-of-words model represents a text as the multi-set of the words it contains.} whereas the code features are defined manually. However, the bag-of-words representation of commit message implies that the temporal dependencies (ordering) of words in a commit message are ignored. In addition, the manual creation of code features might overlook features that maintainers find helpful to identify stable patches. Thus, a richer feature representation of a patch that captures its hierarchical and structural properties is needed.
+
+% The Linux kernel follows a two-tiered release model in which a \textit{mainline} version, accepting bug fixes and feature enhancements, is paralleled by a series of stable versions that accept only bug fixes~\cite{lee2003firm}. 
+% The mainline serves the needs of users who want to take advantage of the latest features, while the stable versions serve the needs of users who value stability, or cannot upgrade their kernel due to hardware and software dependencies. To ensure that there is as much review as possible of the bug fixing patches and to ensure the highest quality of the mainline itself, the Linux kernel
+% requires that all patches applied to the stable versions pass through the mainline first. A mainline subsystem \textit{maintainer} may identify a patch as a bug fixing patch
+% appropriate for stable kernels and add to the commit log a Cc: stable tag.\footnote{The exact tag is \textrm{Cc}: \textrm{stable@vger.kernel.org}.} Stable-kernel maintainers then extract such annotated commits from the mainline commit history and apply the resulting patches to the stable versions that are affected by the bug.
+
+% Figure~\ref{fig:sample_patch} shows a sample bug fixing patch that has been applied to
+% the stable version derived from Linux v4.5. This patch adjusts a returned
+% error code that may influence the value reported to the user level. As
+% illustrated in Figure~\ref{fig:sample_patch}, a patch contains both a
+% textual commit message (lines 5-12) and a set of diff code elements (lines
+% 14-28), i.e., changes that are applied to the affected file. A patch
+% \textit{author} submits a patch to \textit{maintainers}. The
+% maintainers decide whether the patch should be integrated into the
+% mainline kernel, and if so, whether it should be annotated for propagation
+% to stable kernels.
+
+% \begin{figure}[t!]
+% \begin{lstlisting}[language=diff]
+% commit 342da5cefddbf818e1cb59537e021cdad9744e93
+% Author: Alex Lyakas <...>
+% Date:   Thu Mar 10 13:09:46 2016 +0200
+
+%     btrfs: csum_tree_block: return proper errno value
     
-    commit 8bd98f0e6bf792e8fa7c3fed709321ad42ba8d2e upstream.
+%     commit 8bd98f0e6bf792e8fa7c3fed709321ad42ba8d2e upstream.
     
-    Signed-off-by: Alex Lyakas <...>
-    Reviewed-by: Filipe Manana <...>
-    Signed-off-by: David Sterba <...>
-    Signed-off-by: Greg Kroah-Hartman <...>
+%     Signed-off-by: Alex Lyakas <...>
+%     Reviewed-by: Filipe Manana <...>
+%     Signed-off-by: David Sterba <...>
+%     Signed-off-by: Greg Kroah-Hartman <...>
 
-diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
-index d8d68af..87946c6 100644
---- a/fs/btrfs/disk-io.c
-+++ b/fs/btrfs/disk-io.c
-@@ -303,7 +303,7 @@ static int csum_tree_block(struct btrfs_fs_info *fs_info,
-                err = map_private_extent_buffer(buf, offset, 32,
-                                        &kaddr, &map_start, &map_len);
-                if (err)
--                       return 1;
-+                       return err;
-                cur_len = min(len, map_len - (offset - map_start));
-                crc = btrfs_csum_data(kaddr + offset - map_start,
-                                      crc, cur_len);
-@@ -313,7 +313,7 @@ static int csum_tree_block(struct btrfs_fs_info *fs_info,
-...
-\end{lstlisting}\vspace{-0.4cm}
-\caption{A sample bug fixing patch in Linux kernel v4.5.}
-\label{fig:sample_patch}\vspace{-0.4cm}
-\end{figure}
+% diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+% index d8d68af..87946c6 100644
+% --- a/fs/btrfs/disk-io.c
+% +++ b/fs/btrfs/disk-io.c
+% @@ -303,7 +303,7 @@ static int csum_tree_block(struct btrfs_fs_info *fs_info,
+%                 err = map_private_extent_buffer(buf, offset, 32,
+%                                         &kaddr, &map_start, &map_len);
+%                 if (err)
+% -                       return 1;
+% +                       return err;
+%                 cur_len = min(len, map_len - (offset - map_start));
+%                 crc = btrfs_csum_data(kaddr + offset - map_start,
+%                                       crc, cur_len);
+% @@ -313,7 +313,7 @@ static int csum_tree_block(struct btrfs_fs_info *fs_info,
+% ...
+% \end{lstlisting}\vspace{-0.4cm}
+% \caption{A sample bug fixing patch in Linux kernel v4.5.}
+% \label{fig:sample_patch}\vspace{-0.4cm}
+% \end{figure}
 
-The quality of the stable kernels critically relies on the effort that the
-subsystem maintainers put into labeling patches as relevant to the
-stable kernels, i.e., identifying \textit{stable patches}. This manual
-effort represents a potential weak point in the development process, e.g., the maintainers may forget to label some relevant patches, and
-different maintainers could apply different criteria for
-selecting them. While the stable-kernel maintainers can themselves
-additionally pick up relevant patches from the mainline commits, there are
-hundreds of such commits per day, making it likely that many will slip
-past~\cite{lee2003firm}. This task can thus benefit from automated assistance.
+% The quality of the stable kernels critically relies on the effort that the
+% subsystem maintainers put into labeling patches as relevant to the
+% stable kernels, i.e., identifying \textit{stable patches}. This manual
+% effort represents a potential weak point in the development process, e.g., the maintainers may forget to label some relevant patches, and
+% different maintainers could apply different criteria for
+% selecting them. While the stable-kernel maintainers can themselves
+% additionally pick up relevant patches from the mainline commits, there are
+% hundreds of such commits per day, making it likely that many will slip
+% past~\cite{lee2003firm}. This task can thus benefit from automated assistance.
 % \jg{David suggestion: Could we get a quote from Linux kernel maintainers on the need for such system? This can better motivate the problem.}
 
 % \jg{TY: Can you please recheck the paragraph below?}
@@ -88,9 +111,9 @@ past~\cite{lee2003firm}. This task can thus benefit from automated assistance.
 % and relevant properties by considering both its commit message and
 % corresponding code changes is needed. 
 
-Tian et al.~\cite{tian2012identifying} presented an approach that combines LPU (Learning from Positive and Unlabeled Examples)~\cite{letouzey2000learning} and SVM (Support Vector Machine)~\cite{suykens1999least} to automatically identify bug fixing patches for Linux stable kernels. 
-% We note that not all bug fixes are relevant for stable kernels, there are some bugs having low impact or the fix is too complex to be considered, hence the problem of identifying bug fixing patches is close to that of identifying stable patches.\ty{need verification} 
-This LPU+SVM based approach relies on thousands of word features extracted from commit messages and 52 features extracted from code changes. The word features are obtained automatically by representing each commit message as a bag of words,\footnote{A bag-of-words model represents a text as the multi-set of the words it contains.} whereas the code features are defined manually. However, the bag-of-words representation of commit message implies that the temporal dependencies (ordering) of words in a commit message are ignored. In addition, the manual creation of code features might overlook features that maintainers find helpful to identify stable patches. Thus, a richer feature representation of a patch that captures its hierarchical and structural properties is needed.  
+% Tian et al.~\cite{tian2012identifying} presented an approach that combines LPU (Learning from Positive and Unlabeled Examples)~\cite{letouzey2000learning} and SVM (Support Vector Machine)~\cite{suykens1999least} to automatically identify bug fixing patches for Linux stable kernels. 
+% % We note that not all bug fixes are relevant for stable kernels, there are some bugs having low impact or the fix is too complex to be considered, hence the problem of identifying bug fixing patches is close to that of identifying stable patches.\ty{need verification} 
+% This LPU+SVM based approach relies on thousands of word features extracted from commit messages and 52 features extracted from code changes. The word features are obtained automatically by representing each commit message as a bag of words,\footnote{A bag-of-words model represents a text as the multi-set of the words it contains.} whereas the code features are defined manually. However, the bag-of-words representation of commit message implies that the temporal dependencies (ordering) of words in a commit message are ignored. In addition, the manual creation of code features might overlook features that maintainers find helpful to identify stable patches. Thus, a richer feature representation of a patch that captures its hierarchical and structural properties is needed.  
 %by considering both its commit message and corresponding code changes is needed. 
 
 %% \ty{we should
@@ -98,22 +121,22 @@ This LPU+SVM based approach relies on thousands of word features extracted from 
 %% it's not clear why such information is needed for identifying
 %% stable-relevant patches.}
 
-To address the above problems, we propose PatchNet to automatically identify
-stable-relevant patches for the Linux kernel. Deviating from
-the previous LPU+SVM work, which requires human effort to construct code
-features, PatchNet aims to automatically learn two embedding vectors for
-representing the commit message and the set of code changes in a given
-patch, respectively. The two embedding vectors are then used to compute a
-prediction score of a given patch. The key challenge in achieving this
-goal is to accurately represent the structure of code changes, which are
-not contiguous text like the commit message, but rather amount to scattered
-fragments of removed and added code across multiple files. 
-Thus, different
-from existing deep learning techniques working on source
-code~\cite{white2016deep,huo2017enhancing,wang2016automatically,
-lam2017bug}, 
-we propose a
-novel hierarchical representation learning architecture for patches, named PatchNet, by constructing embedding vectors of a given patch in a bottom-up fashion. PatchNet first constructs embedding vectors of removed code and added code of an affected file in the given patch. The embedding vectors are able to capture the sequential nature of the removed and added code. These are then concatenated to build an embedding vector for the affected file. In turn, the embedding vectors of all the affected files are used to build the representation of the entire code changes in the given patch.
+% To address the above problems, we propose PatchNet to automatically identify
+% stable-relevant patches for the Linux kernel. Deviating from
+% the previous LPU+SVM work, which requires human effort to construct code
+% features, PatchNet aims to automatically learn two embedding vectors for
+% representing the commit message and the set of code changes in a given
+% patch, respectively. The two embedding vectors are then used to compute a
+% prediction score of a given patch. The key challenge in achieving this
+% goal is to accurately represent the structure of code changes, which are
+% not contiguous text like the commit message, but rather amount to scattered
+% fragments of removed and added code across multiple files. 
+% Thus, different
+% from existing deep learning techniques working on source
+% code~\cite{white2016deep,huo2017enhancing,wang2016automatically,
+% lam2017bug}, 
+% we propose a
+% novel hierarchical representation learning architecture for patches, named PatchNet, by constructing embedding vectors of a given patch in a bottom-up fashion. PatchNet first constructs embedding vectors of removed code and added code of an affected file in the given patch. The embedding vectors are able to capture the sequential nature of the removed and added code. These are then concatenated to build an embedding vector for the affected file. In turn, the embedding vectors of all the affected files are used to build the representation of the entire code changes in the given patch.
 
 % we propose a novel hierarchical deep learning-based architecture for code changes by taking into account its structure, i.e., changes to different files, changes in different hunks, and changes in each code line (removed and added code). We also capture the sequential nature of source code by considering each line in commit code as a sequence of words. Our model first extracts embedding vectors of removed code and added code of
 % an affected file in the given patch. These embedding vectors are then used to form the structure of code changes (i.e., hunks, lines) in the affected file. This structure then is used to build the representation of the code changes in the given commit.
@@ -128,22 +151,22 @@ novel hierarchical representation learning architecture for patches, named Patch
 % the embedding vector of the file is used to build the representation of the
 % code changes in the given commit.
 
-The main contributions of this paper include:
+% The main contributions of this paper include:
 
-\begin{itemize}[leftmargin=0.4cm]
-\item We take a closer look at the manual process of identifying patches for Linux stable versions and summarize the challenges faced by machine learning in automating this process.
-% \jg{David comment:To claim this contribution we need to do a non-trivial empirical study work and the findings must be well characterized. I wonder have we done that  ...  ? First contribution is typically the most important one. We need to be able to justify this one.}
+% \begin{itemize}[leftmargin=0.4cm]
+% \item We take a closer look at the manual process of identifying patches for Linux stable versions and summarize the challenges faced by machine learning in automating this process.
+% % \jg{David comment:To claim this contribution we need to do a non-trivial empirical study work and the findings must be well characterized. I wonder have we done that  ...  ? First contribution is typically the most important one. We need to be able to justify this one.}
   
- \item In PatchNet, we propose a novel framework to construct an embedding vector for code changes inside a patch, based on both their sequential contents and hierarchical structure, while reusing a commonly employed deep learning strategy to
-process text data for representing the commit message.
+%  \item In PatchNet, we propose a novel framework to construct an embedding vector for code changes inside a patch, based on both their sequential contents and hierarchical structure, while reusing a commonly employed deep learning strategy to
+% process text data for representing the commit message.
  
- %In PatchNet, we propose a novel framework to construct an embedding vector for code changes inside a patch, based on both their contents and structure.
-  %, while reusing a commonly employed deep learning strategy to process text data for representing the commit message.
-\item We evaluate our proposed approach on a new dataset that contains 82,403
-  recent Linux
-  patches. The experiments show the superiority of PatchNet compared to state-of-the-art baselines.  
-%   \ty{not consistent with the ones reported in the data collection section, please also verify the ones reported in the abstract}.
-\end{itemize}
+%  %In PatchNet, we propose a novel framework to construct an embedding vector for code changes inside a patch, based on both their contents and structure.
+%   %, while reusing a commonly employed deep learning strategy to process text data for representing the commit message.
+% \item We evaluate our proposed approach on a new dataset that contains 82,403
+%   recent Linux
+%   patches. The experiments show the superiority of PatchNet compared to state-of-the-art baselines.  
+% %   \ty{not consistent with the ones reported in the data collection section, please also verify the ones reported in the abstract}.
+% \end{itemize}
 
 %The rest of this paper is organized as
 %follows. Section~\ref{sec:background} introduces background

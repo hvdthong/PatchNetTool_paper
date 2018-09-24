@@ -10,7 +10,7 @@ detection~\cite{yang2015deep, wang2016automatically}, automated program
 repair~\cite{gupta2017deepfix}, and API
 learning~\cite{gu2016deep}. However, we did not find any work that applied
 deep learning techniques to learn semantic representations of patches for
-similar tasks such as stable patch identification, patch classification, etc. Here, we briefly describe the most closely related work besides the baseline approaches described in Section~\ref{sec:baselines}.
+similar tasks such as stable patch identification, patch classification, etc.
 
 
 %\vspace{0.1cm} \noindent {\em Sequence-to-sequence learning.} Gu et al. adopted a neural language model named a Recursive Neural Network (RNN)~\cite{hagan1996neural, mikolov2010recurrent} encoder-decoder to generate API usage sequences, i.e., a sequence of method names, for a given natural language query~\cite{gu2016deep}. Gupta et al. proposed DeepFix to automatically fix syntax errors in C code~\cite{gupta2017deepfix}. DeepFix leverages a multi-layered sequence-to-sequence neural network with attention~\cite{mnih2014recurrent}, to process the input code and a decoder RNN with attention that generates the output fixed code. The above studies focus on learning sequence-to-sequence mappings and thus consider a different task than the one considered in our work.
